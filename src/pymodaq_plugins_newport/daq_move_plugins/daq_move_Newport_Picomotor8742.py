@@ -26,14 +26,14 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
 
     params = [
               {'title': 'IP address:', 'name': 'IP', 'type': 'str','value': "192.168.0.107"},
-              {'title': 'Velocity_axis1 (steps/s): ', 'name': 'speed_axis1','type': 'int','value':0 },
-              {'title': 'Acceleration_axis1 (steps/s^2): ', 'name': 'acc_axis1', 'type': 'int','value':0},
-              {'title': 'Velocity_axis2 (steps/s): ', 'name': 'speed_axis2', 'type': 'int','value':0 },
-              {'title': 'Acceleration_axis2 (steps/s^2): ', 'name': 'acc_axis2', 'type': 'int','value':0},
-              {'title': 'Velocity_axis3 (steps/s): ', 'name': 'speed_axis3', 'type': 'int','value':0 },
-              {'title': 'Acceleration_axis3 (steps/s^2): ', 'name': 'acc_axis3', 'type': 'int','value':0},
-              {'title': 'Velocity_axis4 (steps/s): ', 'name': 'speed_axis4', 'type': 'int','value':0 },
-              {'title': 'Acceleration_axis4 (steps/s^2): ', 'name': 'acc_axis4', 'type': 'int','value':0},
+              {'title': 'Velocity_axis1 (steps/s): ', 'name': 'speed_axis1','type': 'int','value':0,'min':1,'max':2e3 },
+              {'title': 'Acceleration_axis1 (steps/s^2): ', 'name': 'acc_axis1', 'type': 'int','value':0,'min':1,'max':2e5},
+              {'title': 'Velocity_axis2 (steps/s): ', 'name': 'speed_axis2', 'type': 'int','value':0,'min':1,'max':2e3 },
+              {'title': 'Acceleration_axis2 (steps/s^2): ', 'name': 'acc_axis2', 'type': 'int','value':0,'min':1,'max':2e5},
+              {'title': 'Velocity_axis3 (steps/s): ', 'name': 'speed_axis3', 'type': 'int','value':0,'min':1,'max':2e3 },
+              {'title': 'Acceleration_axis3 (steps/s^2): ', 'name': 'acc_axis3', 'type': 'int','value':0,'min':1,'max':2e5},
+              {'title': 'Velocity_axis4 (steps/s): ', 'name': 'speed_axis4', 'type': 'int','value':0,'min':1,'max':2e3 },
+              {'title': 'Acceleration_axis4 (steps/s^2): ', 'name': 'acc_axis4', 'type': 'int','value':0,'min':1,'max':2e5},
               {'title': 'MOTOR Type: ', 'name': 'Motor-type', 'type': 'str','value':'None'}, ] + comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
     # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
     # the target value. It is the developer responsibility to put here a meaningful value
