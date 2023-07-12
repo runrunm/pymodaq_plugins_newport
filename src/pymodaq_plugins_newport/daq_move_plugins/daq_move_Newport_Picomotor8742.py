@@ -72,8 +72,14 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         ## TODO for your custom plugin
-        if param.name() == "a_parameter_you've_added_in_self.params":
-           self.controller.your_method_to_apply_this_param_change()
+        if param.name() == 'speed_axis1' or param.name() == 'acc_axis1':
+           self.controller.setup_velocity(axis=1,speed = self.settings.child('speed_axis1').value(), accel= self.settings.child('acc_axis1').value() )
+        if param.name() == 'speed_axis2' or param.name() == 'acc_axis2':
+            self.controller.setup_velocity(axis=2,speed = self.settings.child('speed_axis2').value(), accel= self.settings.child('acc_axis2').value() )
+        if param.name() == 'speed_axis3' or param.name() == 'acc_axis3':
+            self.controller.setup_velocity(axis=3,speed = self.settings.child('speed_axis3').value(), accel= self.settings.child('acc_axis3').value() )
+        if param.name() == 'speed_axis4' or param.name() == 'acc_axis4':
+            self.controller.setup_velocity(axis=4,speed = self.settings.child('speed_axis4').value(), accel= self.settings.child('acc_axis4').value() )
         else:
             pass
 
@@ -99,19 +105,19 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         info = self.controller.get_id()
         initialized = True  # todo
         if initialized:
-            #Motor_type = self.controller.autodetect_motors()
+            Motor_type = self.controller.autodetect_motors()
             #Motor_type =self.controller.get_motor_type(axis ='all')
-            #self.settings.child('Motor-type').setValue(Motor_type)
+            self.settings.child('Motor-type').setValue(Motor_type)
             axis = int(self.settings.child('multiaxes', 'axis').value())
             #print('axis is ',axis)
-            speed,acc= self.controller.get_velocity_parameters(axis=axis)
-            self.settings.child('speed_axis1').setValue(speed)
-            self.settings.child('acc_axis1').setValue(acc)
-            # parameters_velocity = self.controller.get_velocity_parameters()
-            # for k in [1,2,3,4]:
-            #     for i in parameters_velocity:
-            #         self.settings.child('speed_axis{}'.format(k)).setValue(i[0])
-            #         self.settings.child('acc_axis{}'.format(k)).setValue(i[1])
+            #speed,acc= self.controller.get_velocity_parameters(axis=axis)
+            #self.settings.child('speed_axis1').setValue(speed)
+            #self.settings.child('acc_axis1').setValue(acc)
+            parameters_velocity = self.controller.get_velocity_parameters()
+            for k in [1,2,3,4]:
+                for i in parameters_velocity:
+                    self.settings.child('speed_axis{}'.format(k)).setValue(i[0])
+                    self.settings.child('acc_axis{}'.format(k)).setValue(i[1])
         return info, initialized 
 
     def move_abs(self, value):
