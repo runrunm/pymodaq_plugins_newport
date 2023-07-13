@@ -26,15 +26,22 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
 
     params = [
               {'title': 'IP address:', 'name': 'IP', 'type': 'str','value': "192.168.0.107"},
-              {'title': 'Velocity_axis1 (steps/s): ', 'name': 'speed_axis1','type': 'int','value':0,'min':1,'max':2e3 },
-              {'title': 'Acceleration_axis1 (steps/s^2): ', 'name': 'acc_axis1', 'type': 'int','value':0,'min':1,'max':2e5},
-              {'title': 'Velocity_axis2 (steps/s): ', 'name': 'speed_axis2', 'type': 'int','value':0,'min':1,'max':2e3 },
-              {'title': 'Acceleration_axis2 (steps/s^2): ', 'name': 'acc_axis2', 'type': 'int','value':0,'min':1,'max':2e5},
-              {'title': 'Velocity_axis3 (steps/s): ', 'name': 'speed_axis3', 'type': 'int','value':0,'min':1,'max':2e3 },
-              {'title': 'Acceleration_axis3 (steps/s^2): ', 'name': 'acc_axis3', 'type': 'int','value':0,'min':1,'max':2e5},
-              {'title': 'Velocity_axis4 (steps/s): ', 'name': 'speed_axis4', 'type': 'int','value':0,'min':1,'max':2e3 },
-              {'title': 'Acceleration_axis4 (steps/s^2): ', 'name': 'acc_axis4', 'type': 'int','value':0,'min':1,'max':2e5},
-              {'title': 'MOTOR Type: ', 'name': 'Motor-type', 'type': 'str','value':'None'}, ] + comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
+              {'title': 'Axis1: ', 'name': 'axis1','type': 'group','children':[
+                  {'title': 'Velocity (steps/s): ', 'name': 'speed_axis1','type': 'int','value':0,'min':1,'max':2e3 },
+                  {'title': 'Acceleration (steps/s^2): ', 'name': 'acc_axis1', 'type': 'int','value':0,'min':1,'max':2e5},
+                  {'title': 'Type: ', 'name': 'Motor1', 'type':'str','value':'None'},]},
+              {'title': 'Axis2: ', 'name': 'axis2','type': 'group','children':[
+                  {'title': 'Velocity (steps/s): ', 'name': 'speed_axis2', 'type': 'int','value':0,'min':1,'max':2e3 },
+                  {'title': 'Acceleration (steps/s^2): ', 'name': 'acc_axis2', 'type': 'int','value':0,'min':1,'max':2e5},
+                  {'title': 'Type: ', 'name': 'Motor2', 'type':'str','value':'None'},]},
+              {'title': 'Axis3: ', 'name': 'axis3','type': 'group','children':[
+                  {'title': 'Velocity (steps/s): ', 'name': 'speed_axis3', 'type': 'int','value':0,'min':1,'max':2e3 },
+                  {'title': 'Acceleration (steps/s^2): ', 'name': 'acc_axis3', 'type': 'int','value':0,'min':1,'max':2e5},
+                  {'title': 'Type: ', 'name': 'Motor3', 'type':'str','value':'None'},]},
+              {'title': 'Axis4: ', 'name': 'axis4','type': 'group','children':[
+                  {'title': 'Velocity (steps/s): ', 'name': 'speed_axis4', 'type': 'int','value':0,'min':1,'max':2e3 },
+                  {'title': 'Acceleration (steps/s^2): ', 'name': 'acc_axis4', 'type': 'int','value':0,'min':1,'max':2e5},
+                  {'title': 'Type: ', 'name': 'Motor4', 'type':'str','value':'None'},]},] + comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
     # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
     # the target value. It is the developer responsibility to put here a meaningful value
 
@@ -73,13 +80,13 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         """
         ## TODO for your custom plugin
         if param.name() == 'speed_axis1' or param.name() == 'acc_axis1':
-           self.controller.setup_velocity(axis=1,speed = self.settings.child('speed_axis1').value(), accel= self.settings.child('acc_axis1').value() )
+           self.controller.setup_velocity(axis=1,speed = self.settings.child('axis1','speed_axis1').value(), accel= self.settings.child('axis1','acc_axis1').value() )
         if param.name() == 'speed_axis2' or param.name() == 'acc_axis2':
-            self.controller.setup_velocity(axis=2,speed = self.settings.child('speed_axis2').value(), accel= self.settings.child('acc_axis2').value() )
+            self.controller.setup_velocity(axis=2,speed = self.settings.child('axis2','speed_axis2').value(), accel= self.settings.child('axis2','acc_axis2').value() )
         if param.name() == 'speed_axis3' or param.name() == 'acc_axis3':
-            self.controller.setup_velocity(axis=3,speed = self.settings.child('speed_axis3').value(), accel= self.settings.child('acc_axis3').value() )
+            self.controller.setup_velocity(axis=3,speed = self.settings.child('axis3','speed_axis3').value(), accel= self.settings.child('axis3','acc_axis3').value() )
         if param.name() == 'speed_axis4' or param.name() == 'acc_axis4':
-            self.controller.setup_velocity(axis=4,speed = self.settings.child('speed_axis4').value(), accel= self.settings.child('acc_axis4').value() )
+            self.controller.setup_velocity(axis=4,speed = self.settings.child('axis4','speed_axis4').value(), accel= self.settings.child('axis4','acc_axis4').value() )
         else:
             pass
 
@@ -106,18 +113,15 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         initialized = True  # todo
         if initialized:
             Motor_type = self.controller.autodetect_motors()
-            #Motor_type =self.controller.get_motor_type(axis ='all')
-            self.settings.child('Motor-type').setValue(Motor_type)
-            axis = int(self.settings.child('multiaxes', 'axis').value())
-            #print('axis is ',axis)
-            #speed,acc= self.controller.get_velocity_parameters(axis=axis)
-            #self.settings.child('speed_axis1').setValue(speed)
-            #self.settings.child('acc_axis1').setValue(acc)
+            self.settings.child('axis1','Motor1').setValue(Motor_type[0])
+            self.settings.child('axis2','Motor2').setValue(Motor_type[1])
+            self.settings.child('axis3','Motor3').setValue(Motor_type[2])
+            self.settings.child('axis4','Motor4').setValue(Motor_type[3])
             parameters_velocity = self.controller.get_velocity_parameters()
             for k in [1,2,3,4]:
                 for i in parameters_velocity:
-                    self.settings.child('speed_axis{}'.format(k)).setValue(i[0])
-                    self.settings.child('acc_axis{}'.format(k)).setValue(i[1])
+                    self.settings.child('axis{}'.format(k),'speed_axis{}'.format(k)).setValue(i[0])
+                    self.settings.child('axis{}'.format(k),'acc_axis{}'.format(k)).setValue(i[1])
         return info, initialized 
 
     def move_abs(self, value):
