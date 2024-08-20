@@ -36,8 +36,6 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
         The particular object that allow the communication with the hardware, in general a python wrapper around the
          hardware library.
 
-    # TODO add your particular attributes here if any
-
     """
 
     _controller_units = "mm"
@@ -83,9 +81,7 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        pos = DataActuator(
-            data=self.controller.get_position()
-        )  # when writing your own plugin replace this line
+        pos = DataActuator(data=self.controller.get_position())
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -136,12 +132,18 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
                 port=self.settings.child("xps_port").value(),
                 group=self.settings.child("group").value(),
                 positionner=self.settings.child("positionner").value(),
-                plugin=self,
             ),
         )
 
-        info = "Platine init"
+        info = "XPS_Q8 initialization"
         initialized = self.controller.check_connected()
+        if not initialized:
+            self.emit_status(
+                ThreadCommand(
+                    "Update_Status",
+                    ["XPS_Q8 connection failed. Check ip address and port."],
+                )
+            )
         return info, initialized
 
     def move_abs(self, value: DataActuator):

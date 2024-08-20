@@ -1,17 +1,15 @@
-from pymodaq.utils.daq_utils import (
-    ThreadCommand,
-)  # object used to send info back to the main thread
-
 from .XPS_Q8_drivers import XPS
 
 
 class XPSError(Exception):
+    """
+    Exception related to the XPS system
+    """
+
     pass
 
 
 class XPSPythonWrapper:
-    """Simplified XPS wrapper, calls methods from the wrapper given by Newport. See XPS_Q8_drivers"""
-
     def __init__(
         self,
         ip: str,
@@ -19,6 +17,19 @@ class XPSPythonWrapper:
         group: str,
         positionner: str,
     ):
+        """
+        Parameters
+        ----------
+        ip: str
+            IP address to use for communication with the XPS motion controller. ex: "192.168.0.254"
+        port: int
+            IP port for communication with the XPS. ex: 5001
+        group: str
+            name of the group to control. ex: "Group2"
+        positionner: str
+            name of the positionner. ex: "Pos"
+        """
+
         # init the wrapper given by Newport and some attributes
         self.xps = XPS()  # Instantiate the driver from Newport
 
@@ -45,7 +56,8 @@ class XPSPythonWrapper:
         )  # 20s timeout
         # Check connection passed
         if self.socket_id == -1:
-            raise XPSError("Connection to XPS failed, check IP & Port")
+            # connection failed. The plugin will catch that by calling the 'check_connected' method
+            pass
         else:
             # Group kill to be sure
             [error_code, return_string] = self.xps.GroupKill(
@@ -158,16 +170,16 @@ class XPSPythonWrapper:
 
     def set_ip(self, ip: str):
         """
-        Sets the IP address of the XPS system.
+        Sets the IP address to use for TCPIP communication with the XPS motion controller.
 
         Args:
-            ip: IP address of the XPS system
+            ip: IP address of the XPS device
         """
         self._ip = ip
 
     def set_port(self, port: int):
         """
-        Sets the port to use for TCPIP communication with the XPS system
+        Sets the port to use for TCPIP communication with the XPS motion controller.
 
         Args:
             port: port to use
