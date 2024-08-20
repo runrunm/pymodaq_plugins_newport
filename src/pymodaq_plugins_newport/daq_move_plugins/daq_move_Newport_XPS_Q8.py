@@ -121,7 +121,6 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
             False if initialization failed otherwise True
         """
 
-        info = "XPS_Q8 initialization"
         try:
             new_controller = XPSPythonWrapper(
                 ip=self.settings["xps_ip_address"],
@@ -130,8 +129,8 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
                 positionner=self.settings["positionner"],
             )
         except XPSError as e:
-            self.emit_status(ThreadCommand("Update_Status", [f"{e}"]))
             initialized = False
+            info = f"{e}"
             return info, initialized
         else:
             self.controller = self.ini_stage_init(
@@ -140,13 +139,8 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
             )
 
         initialized = self.controller.check_connected()
-        if not initialized:
-            self.emit_status(
-                ThreadCommand(
-                    "Update_Status",
-                    ["XPS_Q8 connection failed. Check ip address and port."],
-                )
-            )
+        # here 'initialized' should always be True, as any error would have been caught above
+        info = "XPS controller initialization"
         return info, initialized
 
     def move_abs(self, value: DataActuator):

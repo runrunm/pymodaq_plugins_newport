@@ -56,8 +56,7 @@ class XPSPythonWrapper:
         )  # 5s timeout
         # Check connection passed
         if self.socket_id == -1:
-            # connection failed. The plugin will catch that by calling the 'check_connected' method
-            pass
+            raise XPSError("XPS_Q8 connection failed. Check ip address and port.")
         else:
             # Group kill to be sure
             [error_code, return_string] = self.xps.GroupKill(
