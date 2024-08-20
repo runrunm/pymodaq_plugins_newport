@@ -113,22 +113,27 @@ class XPSPythonWrapper:
 
     def get_position(self):
         """Returns current the position"""
-        [error_code, current_position] = self.xps.GroupPositionCurrentGet(
-            self.socket_id, self._full_positionner_name, 1
-        )
-        if error_code != 0:
-            self.display_error_and_close(error_code, "GroupPositionCurrentGet")
+        if self.check_connected():
+            [error_code, current_position] = self.xps.GroupPositionCurrentGet(
+                self.socket_id, self._full_positionner_name, 1
+            )
+            if error_code != 0:
+                self.display_error_and_close(error_code, "GroupPositionCurrentGet")
+            else:
+                return float(current_position)
         else:
-            return float(current_position)
+            raise XPSError("XPS connection failed")
 
     def move_absolute(self, value):
         """Moves the stage to the position value."""
-        if self.socket_id != -1:
+        if self.check_connected():
             [error_code, return_string] = self.xps.GroupMoveAbsolute(
                 self.socket_id, self._full_positionner_name, [value]
             )
             if error_code != 0:
                 self.display_error_and_close(error_code, "GroupMoveAbsolute")
+        else:
+            raise XPSError("XPS connection failed")
 
     def move_relative(self, value):
         """Moves the stage to value relative to it's current position."""
@@ -138,15 +143,19 @@ class XPSPythonWrapper:
             )
             if error_code != 0:
                 self.display_error_and_close(error_code, "GroupMoveRelative")
+        else:
+            raise XPSError("XPS connection failed")
 
     def move_home(self):
         """Moves the stage to it's home"""
-        if self.socket_id != -1:
+        if self.check_connected():
             [error_code, return_string] = self.xps.GroupHomeSearch(
                 self.socket_id, self._group
             )
             if error_code != 0:
                 self.display_error_and_close(error_code, "GroupHomeSearch")
+        else:
+            raise XPSError("XPS connection failed")
 
     def set_group(self, group: str):
         """
