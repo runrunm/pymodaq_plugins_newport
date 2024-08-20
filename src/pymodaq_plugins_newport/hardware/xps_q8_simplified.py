@@ -52,8 +52,8 @@ class XPSPythonWrapper:
         Some configs could be added here as well
         """
         self.socket_id = self.xps.TCP_ConnectToServer(
-            self._ip, self._port, 20
-        )  # 20s timeout
+            self._ip, self._port, 5
+        )  # 5s timeout
         # Check connection passed
         if self.socket_id == -1:
             # connection failed. The plugin will catch that by calling the 'check_connected' method
