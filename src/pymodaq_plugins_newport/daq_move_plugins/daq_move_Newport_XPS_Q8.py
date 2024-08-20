@@ -126,10 +126,10 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
         info = "XPS_Q8 initialization"
         try:
             new_controller = XPSPythonWrapper(
-                ip=self.settings.child("xps_ip_address").value(),
-                port=self.settings.child("xps_port").value(),
-                group=self.settings.child("group").value(),
-                positionner=self.settings.child("positionner").value(),
+                ip=self.settings["xps_ip_address"],
+                port=self.settings["xps_port"],
+                group=self.settings["group"],
+                positionner=self.settings["positionner"],
             )
         except XPSError as e:
             self.emit_status(ThreadCommand("Update_Status", [f"{e}"]))
