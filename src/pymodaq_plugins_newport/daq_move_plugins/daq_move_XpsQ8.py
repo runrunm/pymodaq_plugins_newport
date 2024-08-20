@@ -10,30 +10,28 @@ from pymodaq.utils.daq_utils import (
 )  # object used to send info back to the main thread
 from pymodaq.utils.parameter import Parameter
 from pymodaq_plugins_newport.hardware.xps_q8_simplified import (
-    XPSPythonWrapper,
+    SimpleXPS,
     XPSError,
 )
 
 
-class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
-    """Instrument plugin class for Newport_XPS_Q8 Motion Controller.
+class DAQ_Move_XpsQ8(DAQ_Move_base):
+    """Instrument plugin class for Newport XPS Q8 Motion Controller.
 
     This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
     DAQ_Move_base. It makes a bridge between the DAQ_Move module and the Python wrapper of a particular instrument.
 
-    TODO Complete the docstring of your plugin with:
-        * The set of controllers and actuators that should be compatible with this instrument plugin.
-        * With which instrument and controller it has been tested.
-        * The version of PyMoDAQ during the test.
-        * The version of the operating system.
-        * Installation instructions: what manufacturer’s drivers should be installed to make it run?
+    This plugin was tested on a Newport XPS Q8, using PyMoDAQ 2.4.2 on Windows 11.
+    No proprietary driver is needed, the communication with the instrument is done through TCP/IP.
+    This plugin may also be compatible with newer controllers (Newport XPS D series),
+    please notify the author(s) if you have tested this plugin on a different model so it can be added
+    to the list of compatible controllers.
 
     Attributes:
     -----------
     controller: object
         The particular object that allow the communication with the hardware, in general a python wrapper around the
          hardware library.
-
     """
 
     _controller_units = "mm"
@@ -70,7 +68,7 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
     ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
 
     def ini_attributes(self):
-        self.controller: XPSPythonWrapper | None = None
+        self.controller: SimpleXPS | None = None
 
     def get_actuator_value(self):
         """Get the current value from the hardware with scaling conversion.
@@ -193,10 +191,7 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
         """NOT IMPLEMENTED --- Stop the actuator and emits move_done signal"""
 
         ## Not possible to implement with this system as far as I'm aware.
-
-        raise NotImplementedError  # when writing your own plugin remove this line
-        self.controller.your_method_to_stop_positioning()  # when writing your own plugin replace this line
-        self.emit_status(ThreadCommand("Update_Status", ["Some info you want to log"]))
+        raise NotImplementedError
 
 
 if __name__ == "__main__":

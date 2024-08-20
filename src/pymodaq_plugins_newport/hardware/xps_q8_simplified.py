@@ -3,13 +3,13 @@ from .XPS_Q8_drivers import XPS
 
 class XPSError(Exception):
     """
-    Exception related to the XPS system
+    Exception related to the Newport XPS system
     """
 
     pass
 
 
-class XPSPythonWrapper:
+class SimpleXPS:
     def __init__(
         self,
         ip: str,
