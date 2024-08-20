@@ -70,7 +70,7 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
     ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
 
     def ini_attributes(self):
-        self.controller: XPSPythonWrapper = None
+        self.controller: XPSPythonWrapper | None = None
 
     def get_actuator_value(self):
         """Get the current value from the hardware with scaling conversion.
@@ -85,7 +85,8 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
 
     def close(self):
         """Terminate the communication protocol"""
-        self.controller.close_tcpip()
+        if self.controller is not None:  # There's nothing to close otherwise
+            self.controller.close_tcpip()
 
     def commit_settings(self, param: Parameter):
         """Apply the consequences of a change of value in the detector settings
