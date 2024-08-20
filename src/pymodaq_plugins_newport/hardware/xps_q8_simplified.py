@@ -5,22 +5,22 @@ from pymodaq.utils.daq_utils import (
 from .XPS_Q8_drivers import XPS
 
 
+class XPSError(Exception):
+    pass
+
+
 class XPSPythonWrapper:
     """Simplified XPS wrapper, calls methods from the wrapper given by Newport. See XPS_Q8_drivers"""
 
     def __init__(
         self,
-        ip: str = None,
-        port: int = None,
-        group: str = None,
-        positionner: str = None,
-        plugin=None,
+        ip: str,
+        port: int,
+        group: str,
+        positionner: str,
     ):
         # init the wrapper given by Newport and some attributes
         self.xps = XPS()  # Instantiate the driver from Newport
-
-        # keep a ref of the plugin to emit (error) messages
-        self._plugin = plugin
 
         # required to connect via TCP/IP
         self._ip = ip
@@ -45,18 +45,12 @@ class XPSPythonWrapper:
         )  # 20s timeout
         # Check connection passed
         if self.socket_id == -1:
-            self._plugin.emit_status(
-                ThreadCommand(
-                    "Update_Status", ["Connection to XPS failed, check IP & Port"]
-                )
-            )
+            raise XPSError("Connection to XPS failed, check IP & Port")
         else:
-            self._plugin.emit_status(
-                ThreadCommand("Update_Status", ["Connected to XPS"])
-            )
-
             # Group kill to be sure
-            [error_code, return_string] = self.xps.GroupKill(self.socket_id, self._group)
+            [error_code, return_string] = self.xps.GroupKill(
+                self.socket_id, self._group
+            )
             if error_code != 0:
                 self.display_error_and_close(error_code, "GroupKill")
 
@@ -74,11 +68,9 @@ class XPSPythonWrapper:
             # [error_code, return_string] = self.xps.EventExtendedConfigurationTriggerSet(self.socket_id, 'MotionDone',0,0,0,0)
             # if (error_code != 0):
             #     self.display_error_and_close(error_code, 'EventExtendedConfigurationTriggerSet')
-            #     sys.exit()
             # [error_code, return_string] = self.xps.EventExtendedConfigurationActionSet(self.socket_id, , 0, 0, 0, 0)
             # if (error_code != 0):
             #     self.display_error_and_close(error_code, 'EventExtendedConfigurationActionSet')
-            #     sys.exit()
 
     def check_connected(self):
         """Returns true if the connection was successful, else false."""
@@ -87,30 +79,19 @@ class XPSPythonWrapper:
     def display_error_and_close(self, error_code, api_name):
         """Method to recover an error string based on an error code. Closes the TCPIP connection afterwards"""
         if (error_code != -2) and (error_code != -108):
-            [error_code, errorString] = self.xps.ErrorStringGet(
+            [error_code, error_string] = self.xps.ErrorStringGet(
                 self.socket_id, error_code
             )
             if error_code != 0:
-                self._plugin.emit_status(
-                    ThreadCommand("Update_Status", [f"{api_name} : ERROR {error_code"])
-                )
+                raise XPSError(f"{api_name} : ERROR {error_code}")
             else:
-                self._plugin.emit_status(
-                    ThreadCommand("Update_Status", [f"{api_name} : {errorString}"])
-                )
+                raise XPSError(f"{api_name} : {error_string}")
         else:
             if error_code == -2:
-                self._plugin.emit_status(
-                    ThreadCommand("Update_Status", [f"{api_name} : TCP timeout"])
-                )
+                raise XPSError(f"{api_name} : TCP timeout")
             if error_code == -108:
-                self._plugin.emit_status(
-                    ThreadCommand(
-                        "Update_Status",
-                        [
-                            f"{api_name} : The TCP/IP connection was closed by an administrator"
-                        ],
-                    )
+                raise XPSError(
+                    f"{api_name} : The TCP/IP connection was closed by an administrator"
                 )
         self.close_tcpip()
 
@@ -160,7 +141,7 @@ class XPSPythonWrapper:
         Sets the group to control with the plugin
 
         Args:
-            group: Name of the group 
+            group: Name of the group
         """
         self._group = group
         self._full_positionner_name = f"{group}.{self._positionner}"
