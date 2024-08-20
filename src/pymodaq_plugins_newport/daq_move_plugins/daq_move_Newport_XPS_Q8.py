@@ -97,10 +97,8 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
         """
         if param.name() == "xps_ip_address":
             self.controller.set_ip(param.value())
-            self.controller.retry_connection()
         elif param.name() == "xps_port":
             self.controller.set_port(param.value())
-            self.controller.retry_connection()
         elif param.name() == "group":
             self.controller.set_group(param.value())
         elif param.name() == "positionner":
