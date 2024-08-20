@@ -84,14 +84,14 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
         float: The position obtained after scaling conversion.
         """
         pos = DataActuator(
-            data=self.controller.getPosition()
+            data=self.controller.get_position()
         )  # when writing your own plugin replace this line
         pos = self.get_position_with_scaling(pos)
         return pos
 
     def close(self):
         """Terminate the communication protocol"""
-        self.controller.closeTCPIP()
+        self.controller.close_tcpip()
 
     def commit_settings(self, param: Parameter):
         """Apply the consequences of a change of value in the detector settings
@@ -102,15 +102,15 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         if param.name() == "xps_ip_address":
-            self.controller.setIP(param.value())
-            self.controller.retryConnection()
+            self.controller.set_ip(param.value())
+            self.controller.retry_connection()
         elif param.name() == "xps_port":
-            self.controller.setPort(param.value())
-            self.controller.retryConnection()
+            self.controller.set_port(param.value())
+            self.controller.retry_connection()
         elif param.name() == "group":
-            self.controller.setGroup(param.value())
+            self.controller.set_group(param.value())
         elif param.name() == "positionner":
-            self.controller.setPositionner(param.value())
+            self.controller.set_positionner(param.value())
         else:
             pass
 
@@ -141,7 +141,7 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
         )
 
         info = "Platine init"
-        initialized = self.controller.checkConnected()
+        initialized = self.controller.check_connected()
         return info, initialized
 
     def move_abs(self, value: DataActuator):
@@ -159,7 +159,7 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
             value
         )  # apply scaling if the user specified one
 
-        self.controller.moveAbsolute(value.value())
+        self.controller.move_absolute(value.value())
 
         self.emit_status(ThreadCommand("Update_Status", ["moveAbsolute command sent"]))
 
@@ -174,12 +174,12 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
         self.target_value = value + self.current_position
         value = self.set_position_relative_with_scaling(value)
 
-        self.controller.moveRelative(value.value())
+        self.controller.move_relative(value.value())
         self.emit_status(ThreadCommand("Update_Status", ["moveRelative command sent"]))
 
     def move_home(self):
         """Call the reference method of the controller"""
-        self.controller.moveHome()  # when writing your own plugin replace this line
+        self.controller.move_home()  # when writing your own plugin replace this line
         self.emit_status(ThreadCommand("Update_Status", ["Moved home"]))
 
     def stop_motion(self):
