@@ -9,12 +9,10 @@ from pymodaq.utils.daq_utils import (
     ThreadCommand,
 )  # object used to send info back to the main thread
 from pymodaq.utils.parameter import Parameter
-from qtpy.QtCore import QThread
-import sys
-
-from pymodaq_plugins_newport.hardware.xps_q8_simplified import XPSPythonWrapper
-
-from time import perf_counter_ns
+from pymodaq_plugins_newport.hardware.xps_q8_simplified import (
+    XPSPythonWrapper,
+    XPSError,
+)
 
 
 class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
@@ -125,17 +123,24 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
             False if initialization failed otherwise True
         """
 
-        self.controller = self.ini_stage_init(
-            old_controller=controller,
-            new_controller=XPSPythonWrapper(
+        info = "XPS_Q8 initialization"
+        try:
+            new_controller = XPSPythonWrapper(
                 ip=self.settings.child("xps_ip_address").value(),
                 port=self.settings.child("xps_port").value(),
                 group=self.settings.child("group").value(),
                 positionner=self.settings.child("positionner").value(),
-            ),
-        )
+            )
+        except XPSError as e:
+            self.emit_status(ThreadCommand("Update_Status", [f"{e}"]))
+            initialized = False
+            return info, initialized
+        else:
+            self.controller = self.ini_stage_init(
+                old_controller=controller,
+                new_controller=new_controller,
+            )
 
-        info = "XPS_Q8 initialization"
         initialized = self.controller.check_connected()
         if not initialized:
             self.emit_status(
@@ -160,10 +165,11 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
         value = self.set_position_with_scaling(
             value
         )  # apply scaling if the user specified one
-
-        self.controller.move_absolute(value.value())
-
-        self.emit_status(ThreadCommand("Update_Status", ["moveAbsolute command sent"]))
+        self.emit_status(ThreadCommand("Update_Status", ["move_absolute command sent"]))
+        try:
+            self.controller.move_absolute(value.value())
+        except XPSError as e:
+            self.emit_status(ThreadCommand("Update_Status", [f"{e}"]))
 
     def move_rel(self, value: DataActuator):
         """Move the actuator to the relative target actuator value defined by value
@@ -176,13 +182,19 @@ class DAQ_Move_Newport_XPS_Q8(DAQ_Move_base):
         self.target_value = value + self.current_position
         value = self.set_position_relative_with_scaling(value)
 
-        self.controller.move_relative(value.value())
-        self.emit_status(ThreadCommand("Update_Status", ["moveRelative command sent"]))
+        self.emit_status(ThreadCommand("Update_Status", ["move_relative command sent"]))
+        try:
+            self.controller.move_relative(value.value())
+        except XPSError as e:
+            self.emit_status(ThreadCommand("Update_Status", [f"{e}"]))
 
     def move_home(self):
         """Call the reference method of the controller"""
-        self.controller.move_home()  # when writing your own plugin replace this line
-        self.emit_status(ThreadCommand("Update_Status", ["Moved home"]))
+        self.emit_status(ThreadCommand("Update_Status", ["moved_home command sent"]))
+        try:
+            self.controller.move_home()
+        except XPSError as e:
+            self.emit_status(ThreadCommand("Update_Status", [f"{e}"]))
 
     def stop_motion(self):
         """NOT IMPLEMENTED --- Stop the actuator and emits move_done signal"""
