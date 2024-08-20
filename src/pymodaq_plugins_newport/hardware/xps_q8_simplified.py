@@ -1,3 +1,7 @@
+from pymodaq.utils.daq_utils import (
+    ThreadCommand,
+)  # object used to send info back to the main thread
+
 from .XPS_Q8_drivers import XPS
 
 
@@ -13,7 +17,7 @@ class XPSPythonWrapper:
         plugin=None,
     ):
         # init the wrapper given by Newport and some attributes
-        self.myxps = XPS()  # Instanciate the driver from Newport
+        self.xps = XPS()  # Instantiate the driver from Newport
 
         # keep a ref of the plugin to emit (error) messages
         self._plugin = plugin
@@ -21,7 +25,7 @@ class XPSPythonWrapper:
         # required to connect via TCP/IP
         self._ip = ip
         self._port = port
-        self.socketId = -1
+        self.socket_id = -1
 
         # Definition of the stage
         self._group = group
@@ -29,16 +33,18 @@ class XPSPythonWrapper:
         self._full_positionner_name = f"{group}.{positionner}"
 
         # Some required initialisation steps
-        self._initCommands()
+        self._init_commands()
 
-    def _initCommands(self):
-        """Runs some initial commands : connect to the XPS server, group kill, group intialize, move home.
-        Some configs could be added here as well"""
-        self.socketId = self.myxps.TCP_ConnectToServer(
+    def _init_commands(self):
+        """
+        Runs some initial commands : connect to the XPS server, group kill, group intialize, move home.
+        Some configs could be added here as well
+        """
+        self.socket_id = self.xps.TCP_ConnectToServer(
             self._ip, self._port, 20
         )  # 20s timeout
         # Check connection passed
-        if self.socketId == -1:
+        if self.socket_id == -1:
             self._plugin.emit_status(
                 ThreadCommand(
                     "Update_Status", ["Connection to XPS failed, check IP & Port"]
@@ -50,124 +56,146 @@ class XPSPythonWrapper:
             )
 
             # Group kill to be sure
-            [errorCode, returnString] = self.myxps.GroupKill(self.socketId, self._group)
-            if errorCode != 0:
-                self.displayErrorAndClose(errorCode, "GroupKill")
+            [error_code, return_string] = self.xps.GroupKill(self.socket_id, self._group)
+            if error_code != 0:
+                self.display_error_and_close(error_code, "GroupKill")
 
             # Initialize
-            [errorCode, returnString] = self.myxps.GroupInitialize(
-                self.socketId, self._group
+            [error_code, return_string] = self.xps.GroupInitialize(
+                self.socket_id, self._group
             )
-            if errorCode != 0:
-                self.displayErrorAndClose(errorCode, "GroupInitialize")
+            if error_code != 0:
+                self.display_error_and_close(error_code, "GroupInitialize")
 
             # Home search
-            self.moveHome()
+            self.move_home()
 
             # Definition of the MotionDone trigger
-            # [errorCode, returnString] = self.myxps.EventExtendedConfigurationTriggerSet(self.socketId, 'MotionDone',0,0,0,0)
-            # if (errorCode != 0):
-            #     self.displayErrorAndClose(errorCode, 'EventExtendedConfigurationTriggerSet')
+            # [error_code, return_string] = self.xps.EventExtendedConfigurationTriggerSet(self.socket_id, 'MotionDone',0,0,0,0)
+            # if (error_code != 0):
+            #     self.display_error_and_close(error_code, 'EventExtendedConfigurationTriggerSet')
             #     sys.exit()
-            # [errorCode, returnString] = self.myxps.EventExtendedConfigurationActionSet(self.socketId, , 0, 0, 0, 0)
-            # if (errorCode != 0):
-            #     self.displayErrorAndClose(errorCode, 'EventExtendedConfigurationActionSet')
+            # [error_code, return_string] = self.xps.EventExtendedConfigurationActionSet(self.socket_id, , 0, 0, 0, 0)
+            # if (error_code != 0):
+            #     self.display_error_and_close(error_code, 'EventExtendedConfigurationActionSet')
             #     sys.exit()
 
-    def checkConnected(self):
+    def check_connected(self):
         """Returns true if the connection was successful, else false."""
-        return self.socketId != -1
+        return self.socket_id != -1
 
-    def displayErrorAndClose(self, errorCode, APIName):
+    def display_error_and_close(self, error_code, api_name):
         """Method to recover an error string based on an error code. Closes the TCPIP connection afterwards"""
-        if (errorCode != -2) and (errorCode != -108):
-            [errorCode2, errorString] = self.myxps.ErrorStringGet(
-                self.socketId, errorCode
+        if (error_code != -2) and (error_code != -108):
+            [error_code, errorString] = self.xps.ErrorStringGet(
+                self.socket_id, error_code
             )
-            if errorCode2 != 0:
+            if error_code != 0:
                 self._plugin.emit_status(
-                    ThreadCommand("Update_Status", [f"{APIName} : ERROR {errorCode}"])
+                    ThreadCommand("Update_Status", [f"{api_name} : ERROR {error_code"])
                 )
             else:
                 self._plugin.emit_status(
-                    ThreadCommand("Update_Status", [f"{APIName} : {errorString}"])
+                    ThreadCommand("Update_Status", [f"{api_name} : {errorString}"])
                 )
         else:
-            if errorCode == -2:
+            if error_code == -2:
                 self._plugin.emit_status(
-                    ThreadCommand("Update_Status", [f"{APIName} : TCP timeout"])
+                    ThreadCommand("Update_Status", [f"{api_name} : TCP timeout"])
                 )
-            if errorCode == -108:
+            if error_code == -108:
                 self._plugin.emit_status(
                     ThreadCommand(
                         "Update_Status",
                         [
-                            f"{APIName} : The TCP/IP connection was closed by an administrator"
+                            f"{api_name} : The TCP/IP connection was closed by an administrator"
                         ],
                     )
                 )
-        self.closeTCPIP()
+        self.close_tcpip()
 
-    def closeTCPIP(self):
+    def close_tcpip(self):
         """Call the method to close the socket."""
-        self.myxps.TCP_CloseSocket(self.socketId)
+        self.xps.TCP_CloseSocket(self.socket_id)
 
-    def getPosition(self):
+    def get_position(self):
         """Returns current the position"""
-        [errorCode, currentPosition] = self.myxps.GroupPositionCurrentGet(
-            self.socketId, self._full_positionner_name, 1
+        [error_code, current_position] = self.xps.GroupPositionCurrentGet(
+            self.socket_id, self._full_positionner_name, 1
         )
-        if errorCode != 0:
-            self.displayErrorAndClose(errorCode, "GroupPositionCurrentGet")
-            sys.exit()
+        if error_code != 0:
+            self.display_error_and_close(error_code, "GroupPositionCurrentGet")
         else:
-            return float(currentPosition)
+            return float(current_position)
 
-    def moveAbsolute(self, value):
+    def move_absolute(self, value):
         """Moves the stage to the position value."""
-        if self.socketId != -1:
-            [errorCode, returnString] = self.myxps.GroupMoveAbsolute(
-                self.socketId, self._full_positionner_name, [value]
+        if self.socket_id != -1:
+            [error_code, return_string] = self.xps.GroupMoveAbsolute(
+                self.socket_id, self._full_positionner_name, [value]
             )
-            if errorCode != 0:
-                self.displayErrorAndClose(errorCode, "GroupMoveAbsolute")
+            if error_code != 0:
+                self.display_error_and_close(error_code, "GroupMoveAbsolute")
 
-    def moveRelative(self, value):
+    def move_relative(self, value):
         """Moves the stage to value relative to it's current position."""
-        if self.socketId != -1:
-            [errorCode, returnString] = self.myxps.GroupMoveRelative(
-                self.socketId, self._full_positionner_name, [value]
+        if self.socket_id != -1:
+            [error_code, return_string] = self.xps.GroupMoveRelative(
+                self.socket_id, self._full_positionner_name, [value]
             )
-            if errorCode != 0:
-                self.displayErrorAndClose(errorCode, "GroupMoveRelative")
+            if error_code != 0:
+                self.display_error_and_close(error_code, "GroupMoveRelative")
 
-    def moveHome(self):
+    def move_home(self):
         """Moves the stage to it's home"""
-        if self.socketId != -1:
-            [errorCode, returnString] = self.myxps.GroupHomeSearch(
-                self.socketId, self._group
+        if self.socket_id != -1:
+            [error_code, return_string] = self.xps.GroupHomeSearch(
+                self.socket_id, self._group
             )
-            if errorCode != 0:
-                self.displayErrorAndClose(errorCode, "GroupHomeSearch")
+            if error_code != 0:
+                self.display_error_and_close(error_code, "GroupHomeSearch")
 
-    def setGroup(self, group: str):
+    def set_group(self, group: str):
+        """
+        Sets the group to control with the plugin
+
+        Args:
+            group: Name of the group 
+        """
         self._group = group
         self._full_positionner_name = f"{group}.{self._positionner}"
 
-    def setPositionner(self, positionner: str):
+    def set_positionner(self, positionner: str):
+        """
+        Sets the positionner to control with the plugin
+
+        Args:
+            positionner: Name of the positionner
+        """
         self._positionner = positionner
         self._full_positionner_name = f"{self._group}.{positionner}"
 
-    def setIP(self, IP: str):
-        """Sets a new IP address. Does not automatically try to connect with it, call retryConnection."""
-        self._ip = IP
+    def set_ip(self, ip: str):
+        """
+        Sets the IP address of the XPS system.
 
-    def setPort(self, port: int):
-        """Sets a new port. Does not automatically try to connect with it, call retryConnection."""
+        Args:
+            ip: IP address of the XPS system
+        """
+        self._ip = ip
+
+    def set_port(self, port: int):
+        """
+        Sets the port to use for TCPIP communication with the XPS system
+
+        Args:
+            port: port to use
+        """
         self._port = port
 
-    def retryConnection(self):
-        """Closes the connection and runs the init sequence again.
-        Called by the plugin after any change to the IP address or port parameters."""
-        self.closeTCPIP()
-        self._initCommands()
+    def retry_connection(self):
+        """
+        Closes the existing TCPIP connection and tries to reconnect
+        """
+        self.close_tcpip()
+        self._init_commands()
