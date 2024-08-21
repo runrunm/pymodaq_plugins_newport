@@ -121,7 +121,7 @@ class DAQ_Move_XpsQ8(DAQ_Move_base):
         """
 
         try:
-            new_controller = XPSPythonWrapper(
+            new_controller = SimpleXPS(
                 ip=self.settings["xps_ip_address"],
                 port=self.settings["xps_port"],
                 group=self.settings["group"],
