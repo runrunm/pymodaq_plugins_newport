@@ -62,6 +62,7 @@ class SMC100:
         'parity':               visa.constants.Parity.none,
         'data_bits':            8,
         'stop_bits':            visa.constants.StopBits.one,
+        'flow_control':         visa.constants.VI_ASRL_FLOW_XON_XOFF,
     }
 
 
@@ -75,31 +76,6 @@ class SMC100:
         self.dev_number = dev_number
         self._device = None
         self.error_code = ERROR_CODE
-
-
-    def initialize(self) -> None:
-        """Connect to device."""
-        port = 'ASRL'+self.port+'::INSTR'
-        #rm_list = rm.list_resources()
-        self._device = visa.ResourceManager('@py').open_resource(
-            port,
-            timeout=self.defaults['timeout'],
-            encoding=self.defaults['encoding'],
-            parity=self.defaults['parity'],
-            baud_rate=self.defaults['baud_rate'],
-            data_bits=self.defaults['data_bits'],
-            stop_bits=self.defaults['stop_bits'],
-            write_termination=self.defaults['write_termination'],
-            read_termination=self.defaults['read_termination']
-        )
-
-        # make sure connection is established before doing anything else
-        sleep(0.5)
-        print(f"Connected to Newport stage {self.dev_number}: {self.idn}")
-
-        #err, ctrl = self.error_and_controller_status() # clears error buffer
-        #print(err, ctrl)
-        #print("Connected to Newport stage: %s".format(self.idn))
 
     def write(self, cmd: str):
         """ Add device number to command and send to device. """
@@ -118,6 +94,41 @@ class SMC100:
         answer = respons[3:]
 
         return answer
+
+    def initialize(self) -> None:
+        """Connect to device."""
+        port = 'ASRL'+self.port+'::INSTR'
+        #rm_list = rm.list_resources()
+        self._device = visa.ResourceManager('@py').open_resource(
+            port,
+            timeout=self.defaults['timeout'],
+            encoding=self.defaults['encoding'],
+            parity=self.defaults['parity'],
+            baud_rate=self.defaults['baud_rate'],
+            data_bits=self.defaults['data_bits'],
+            stop_bits=self.defaults['stop_bits'],
+            write_termination=self.defaults['write_termination'],
+            read_termination=self.defaults['read_termination'],
+            flow_control=self.defaults['flow_control'],
+        )
+
+        # make sure connection is established before doing anything else
+        sleep(0.5)
+        print(f"Connected to Newport stage {self.dev_number}: {self.idn}\n")
+        self.write('OR')
+        sleep(0.5)
+        print('Stage initialized')
+        #err, ctrl = self.error_and_controller_status() # clears error buffer
+        #print(err, ctrl)
+        #print("Connected to Newport stage: %s".format(self.idn))
+
+    def disable(self):
+        """Turn controller into DISABLE state"""
+        self.write('MM0')
+
+    def enable(self):
+        """Turn controller into READY state"""
+        self.write('MM1')
 
     def close(self):
         """Close connection to device."""
@@ -189,7 +200,7 @@ class SMC100:
 
     def home(self):
         """ Move device to home position. """
-        self.write('OR')
+        self.write('PA0')
 
     def reset(self):
         """Resetting the controller.
