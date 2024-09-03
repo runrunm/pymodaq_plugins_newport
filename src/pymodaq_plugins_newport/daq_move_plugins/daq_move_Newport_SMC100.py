@@ -1,5 +1,5 @@
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main, DataActuatorType, \
-    DataActuator  # common set of parameters for all actuators
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main, DataActuator
+# common set of parameters for all actuators
 from pymodaq.utils.daq_utils import ThreadCommand  # object used to send info back to the main thread
 from pymodaq.utils.parameter import Parameter
 
@@ -34,7 +34,7 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
 
     # TODO add your particular attributes here if any
     """
-    _controller_units = 'mm'  # DONE for your plugin: put the correct unit here
+    _controller_units = '°'  # DONE for your plugin: put the correct unit here
     is_multiaxes = False
     _axis_names = ['1']
     _epsilon = 0.0001
@@ -62,34 +62,28 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        ## TODO for your custom plugin
-        # raise NotImplemented  # when writing your own plugin remove this line
-        # pos = DataActuator(
-        #     data=self.controller.your_method_to_get_the_actuator_value())  # when writing your own plugin replace this line
-        # pos = self.get_position_with_scaling(pos)
-        # return pos
+        pos = DataActuator(data=self.controller.position)  # when writing your own plugin replace this line
+        pos = self.get_position_with_scaling(pos)
+        return pos
 
     def close(self):
         """Terminate the communication protocol"""
-        ## TODO for your custom plugin
-        # raise NotImplemented  # when writing your own plugin remove this line
-        #  self.controller.your_method_to_terminate_the_communication()  # when writing your own plugin replace this line
-        # self.controller.reset()
+        self.controller.reset()
         self.controller.close()
 
-    def commit_settings(self, param: Parameter):
-        """Apply the consequences of a change of value in the detector settings
-
-        Parameters
-        ----------
-        param: Parameter
-            A given parameter (within detector_settings) whose value has been changed by the user
-        """
-        ## TODO for your custom plugin
-        # if param.name() == "a_parameter_you've_added_in_self.params":
-        #     self.controller.your_method_to_apply_this_param_change()
-        # else:
-        #     pass
+    # def commit_settings(self, param: Parameter):
+    #     """Apply the consequences of a change of value in the detector settings
+    #
+    #     Parameters
+    #     ----------
+    #     param: Parameter
+    #         A given parameter (within detector_settings) whose value has been changed by the user
+    #     """
+    #     ## TODO for your custom plugin
+    #     # if param.name() == "a_parameter_you've_added_in_self.params":
+    #     #     self.controller.your_method_to_apply_this_param_change()
+    #     # else:
+    #     #     pass
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -141,7 +135,7 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
         self.target_value = value + self.current_position
         value = self.set_position_relative_with_scaling(value)
 
-        self.controller.move_rel(value.value())  # when writing your own plugin replace this line
+        self.controller.move_rel(value)  # when writing your own plugin replace this line
         self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
 
     def move_home(self):
