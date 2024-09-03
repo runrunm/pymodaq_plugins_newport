@@ -199,7 +199,9 @@ class SMC100:
         return float(pos)
 
     def home(self):
-        """ Move device to home position. """
+        """ Move device to position 0. The command "OR" for homing is only available when controller is in
+         "NOT REFERENCED" state → after a controller reboot or a reset
+         """
         self.write('PA0')
 
     def reset(self):
@@ -207,6 +209,10 @@ class SMC100:
         After execution controller is in NOT REFERENCED state
         """
         self.write('RS')
+
+    def stop(self):
+        """Stop motion"""
+        self.write('ST')
 
     @property
     def speed(self) -> float:
