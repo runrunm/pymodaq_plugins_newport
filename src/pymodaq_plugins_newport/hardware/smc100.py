@@ -1,19 +1,13 @@
 """
-Driver for the Newport motorized translation stages connected
-to the SMC100 controller.
-Commands and settings for serial communication are found in
-the SMC100 Newport Manual
+Python wrapper for Newport SMC100 controllers
 
-File name: newport.py
-Author: Julian Krauth
-Date created: 2019/05/22
-Python Version: 3.7
+Made from labdevices python library (newport.py file originally created by Julian Krauth the 2019/05/22) and
+adapted for PyMoDAQ software
 """
+
 from time import sleep
 from typing import Tuple
 import pyvisa as visa
-
-# from ._mock.newport import PyvisaDummy
 
 CTRL_STATUS = {
     'configuration':      0x14,
