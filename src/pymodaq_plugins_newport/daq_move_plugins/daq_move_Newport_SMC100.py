@@ -62,7 +62,7 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        pos = DataActuator(data=self.controller.position)  # when writing your own plugin replace this line
+        pos = DataActuator(data=self.controller.position)
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -102,27 +102,25 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
         self.controller = self.ini_stage_init(old_controller=controller,
                                               new_controller=SMC100(port=port_nb, dev_number=dev_nb))
 
-        info = "Whatever info you want to log"
+        info = "Initializing stage"
         self.controller.initialize()
         initialized = True
         return info, initialized
 
-    # def move_abs(self, value: DataActuator):
-    #     """ Move the actuator to the absolute target defined by value
-    #
-    #     Parameters
-    #     ----------
-    #     value: (float) value of the absolute target positioning
-    #     """
-    #
-    #     value = self.check_bound(value)  # if user checked bounds, the defined bounds are applied here
-    #     self.target_value = value
-    #     value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
-    #     ## TODO for your custom plugin
-    #     raise NotImplemented  # when writing your own plugin remove this line
-    #     self.controller.your_method_to_set_an_absolute_value(
-    #         value.value())  # when writing your own plugin replace this line
-    #     self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+    def move_abs(self, value: DataActuator):
+        """ Move the actuator to the absolute target defined by value
+
+        Parameters
+        ----------
+        value: (float) value of the absolute target positioning
+        """
+
+        value = self.check_bound(value)  # if user checked bounds, the defined bounds are applied here
+        self.target_value = value
+        value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
+
+        self.controller.move_abs(value)  # when writing your own plugin replace this line
+        self.emit_status(ThreadCommand('Update_Status', ['Moving']))
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
@@ -136,22 +134,21 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
         value = self.set_position_relative_with_scaling(value)
 
         self.controller.move_rel(value)  # when writing your own plugin replace this line
-        self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+        self.emit_status(ThreadCommand('Update_Status', ['Moving']))
 
     def move_home(self):
         """Call the reference method of the controller"""
 
-        ## TODO for your custom plugin
         self.controller.home()  # when writing your own plugin replace this line
-        self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+        self.emit_status(ThreadCommand('Update_Status', ['Moving to position 0']))
 
-    # def stop_motion(self):
-    #     """Stop the actuator and emits move_done signal"""
-    #
-    #     ## TODO for your custom plugin
-    #     raise NotImplemented  # when writing your own plugin remove this line
-    #     self.controller.your_method_to_stop_positioning()  # when writing your own plugin replace this line
-    #     self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+    def stop_motion(self):
+        """Stop the actuator and emits move_done signal"""
+
+        ## TODO for your custom plugin
+        self.controller.stop()  # when writing your own plugin replace this line
+        self.get_actuator_value()
+        self.emit_status(ThreadCommand('Update_Status', ['Motion stopped']))
 
 
 if __name__ == '__main__':
