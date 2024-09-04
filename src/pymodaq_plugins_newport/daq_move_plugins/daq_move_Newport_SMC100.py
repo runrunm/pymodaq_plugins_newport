@@ -9,7 +9,7 @@ import pyvisa
 rm = pyvisa.ResourceManager()
 infos = rm.list_resources_info()
 ports = [infos[key].interface_board_number for key in infos.keys()]
-dev_nb = 1  # Works when working with 1 SMC100 controller. Updating plugin is needed for controlling more controllers
+dev_nb = [1]  # Works when working with 1 SMC100 controller. Updating plugin is needed for controlling more controllers
 rm.close()
 
 class DAQ_Move_Newport_SMC100(DAQ_Move_base):
@@ -41,7 +41,8 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
     _axis_names = ['1']
     _epsilon = 0.0001
 
-    params = [{'title': 'COM Port:', 'name': 'com_port', 'type': 'list', 'limits': ports}  # ['COM' + str(s) for s in ports]
+    params = [{'title': 'COM Port:', 'name': 'com_port', 'type': 'list', 'limits': ports},
+              {'title': 'Stage:', 'name': 'stage_nb', 'type': 'list', 'limits': dev_nb}
              ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
 
     # print(params[0]['title'])
@@ -108,7 +109,7 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
 
         self.controller = self.ini_stage_init(old_controller=controller,
                                               new_controller=SMC100(port=self.settings['com_port'],
-                                                                    dev_number=dev_nb))
+                                                                    dev_number=self.settings['stage_nb']))
 
         info = "Initializing stage"
         self.controller.initialize()
