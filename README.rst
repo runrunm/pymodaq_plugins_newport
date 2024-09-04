@@ -12,7 +12,7 @@ pymodaq_plugins_newport (Newport Instruments)
 .. image:: https://github.com/PyMoDAQ/pymodaq_plugins_newport/workflows/Upload%20Python%20Package/badge.svg
     :target: https://github.com/PyMoDAQ/pymodaq_plugins_newport
 
-PyMoDAQ plugin for instruments from Newport (Conex, ESP100, AG-CU8...)
+PyMoDAQ plugin for instruments from Newport (Conex, ESP100, SMC100, AG-CU8...)
 
 
 Authors
@@ -21,6 +21,7 @@ Authors
 * Sebastien J. Weber
 * David Bresteau (david.bresteau@cea.fr)
 * Sébastien Quistrebert (sebastien.quistrebert@ens-paris-saclay.fr)
+* Bastien Bégon (bastien.begon@crpp.cnrs.fr)
 
 Instruments
 ===========
@@ -33,6 +34,7 @@ Actuators
 * **Newport_ESP100**: ESP100 motion controllers
 * **AgilisSerial**: for controllers AG-UC8 and AG-UC2 tested with motorized mounts AG-M100N (no encoder)
 * **XPS-Q8**: 8-axis Universal Motion Controller/Driver, ethernet
+* **SMC100**: Single axis motion controller
 
 Installation notes
 ==================
@@ -56,3 +58,15 @@ XPS-Q8
 ++++++
 
 tested on Windows 11 with pymodaq >= 4.1.0.
+
+SMC100
+++++++
+
+Tested with SMC100PP (stepper motor) controller using USB/RS232 connection and URS150 motorized rotation stage.
+Installing `Newport SMC100 software <https://www.newport.com/f/smc100-single-axis-dc-or-stepper-motion-controller>`_ should provide all necessary drivers.
+
+Operating System: Windows 11
+
+PyMoDAQ version: 4.3.0 running in a conda environment with Python 3.11.9
+
+
