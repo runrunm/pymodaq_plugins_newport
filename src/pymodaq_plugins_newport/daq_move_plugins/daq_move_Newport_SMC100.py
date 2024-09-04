@@ -39,7 +39,7 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
     _controller_units = '°'
     is_multiaxes = False
     _axis_names = ['1']
-    _epsilon = 0.0001
+    _epsilon = 0.01
 
     params = [{'title': 'COM Port:', 'name': 'com_port', 'type': 'list', 'limits': ports},
               {'title': 'Stage:', 'name': 'stage_nb', 'type': 'list', 'limits': stage_nb}
@@ -51,13 +51,7 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
     # the target value. It is the developer responsibility to put here a meaningful value
 
     def ini_attributes(self):
-        #  TODO declare the type of the wrapper (and assign it to self.controller) you're going to use for easy
-        #  autocompletion
-        # self.controller: SMC100 = None
-
-        # TODO declare here attributes you want/need to init with a default value
-        # print(self.settings['limits'])
-        pass
+        self.controller: SMC100 = None
 
     def get_actuator_value(self):
         """Get the current value from the hardware with scaling conversion.
@@ -66,7 +60,8 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        pos = DataActuator(data=self.controller.position)
+        # pos = DataActuator(data=self.controller.position)
+        pos = self.controller.position
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -158,7 +153,6 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
     def stop_motion(self):
         """Stop the actuator and emits move_done signal"""
 
-        ## TODO for your custom plugin
         self.controller.stop()  # when writing your own plugin replace this line
         self.get_actuator_value()
         self.emit_status(ThreadCommand('Update_Status', ['Motion stopped']))
