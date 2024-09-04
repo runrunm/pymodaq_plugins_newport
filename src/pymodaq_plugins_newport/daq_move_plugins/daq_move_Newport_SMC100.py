@@ -9,7 +9,7 @@ import pyvisa
 rm = pyvisa.ResourceManager()
 infos = rm.list_resources_info()
 ports = [infos[key].interface_board_number for key in infos.keys()]
-dev_nb = [1]  # Works when working with 1 SMC100 controller. Updating plugin is needed for controlling more controllers
+stage_nb = [1]  # Works with 1 SMC100 controller (1 stage). Not tested with multiple controllers
 rm.close()
 
 class DAQ_Move_Newport_SMC100(DAQ_Move_base):
@@ -42,7 +42,7 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
     _epsilon = 0.0001
 
     params = [{'title': 'COM Port:', 'name': 'com_port', 'type': 'list', 'limits': ports},
-              {'title': 'Stage:', 'name': 'stage_nb', 'type': 'list', 'limits': dev_nb}
+              {'title': 'Stage:', 'name': 'stage_nb', 'type': 'list', 'limits': stage_nb}
              ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
 
     # print(params[0]['title'])
@@ -114,6 +114,9 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
         info = "Initializing stage"
         self.controller.initialize()
         self.controller.homing()  # Turns controller to REFERENCED state (solid green)
+
+        print(f"Connected to Newport stage {self.settings['stage_nb']} on COM{self.settings['com_port']}:"
+              f" {self.controller.idn}\n")
         initialized = True
         return info, initialized
 
@@ -149,7 +152,7 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
     def move_home(self):
         """Call the reference method of the controller"""
 
-        self.controller.home()  # when writing your own plugin replace this line
+        self.controller.move_abs(.0)  # when writing your own plugin replace this line
         self.emit_status(ThreadCommand('Update_Status', ['Moving to position 0']))
 
     def stop_motion(self):

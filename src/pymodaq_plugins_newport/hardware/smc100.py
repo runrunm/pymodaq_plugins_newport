@@ -107,7 +107,6 @@ class SMC100:
 
         # make sure connection is established before doing anything else
         sleep(0.5)
-        print(f"Connected to Newport stage {self.dev_number}: {self.idn}\n")
 
     def homing(self):
         """Find home, works only if controller state is NOT REFERENCED"""
