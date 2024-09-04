@@ -60,7 +60,6 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        # pos = DataActuator(data=self.controller.position)
         pos = self.controller.position
         pos = self.get_position_with_scaling(pos)
         return pos
