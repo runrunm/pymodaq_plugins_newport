@@ -90,9 +90,8 @@ class SMC100:
         return answer
 
     def initialize(self) -> None:
-        """Connect to device."""
+        """Connect to device using pyvisa resource manager"""
         port = 'ASRL'+self.port+'::INSTR'
-        #rm_list = rm.list_resources()
         self._device = visa.ResourceManager('@py').open_resource(
             port,
             timeout=self.defaults['timeout'],
@@ -109,12 +108,17 @@ class SMC100:
         # make sure connection is established before doing anything else
         sleep(0.5)
         print(f"Connected to Newport stage {self.dev_number}: {self.idn}\n")
+
+    def homing(self):
+        """Find home, works only if controller state is NOT REFERENCED"""
         self.write('OR')
-        sleep(0.5)
-        print('Stage initialized')
-        #err, ctrl = self.error_and_controller_status() # clears error buffer
-        #print(err, ctrl)
-        #print("Connected to Newport stage: %s".format(self.idn))
+
+    def close(self):
+        """Close connection to device."""
+        if self._device is not None:
+            self._device.close()
+            return
+        print('Newport device is already closed')
 
     def disable(self):
         """Turn controller into DISABLE state"""
@@ -123,13 +127,6 @@ class SMC100:
     def enable(self):
         """Turn controller into READY state"""
         self.write('MM1')
-
-    def close(self):
-        """Close connection to device."""
-        if self._device is not None:
-            self._device.close()
-            return
-        print('Newport device is already closed')
 
     @property
     def idn(self) -> str:

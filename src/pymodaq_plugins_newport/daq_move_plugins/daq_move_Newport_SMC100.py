@@ -31,8 +31,6 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
     controller: object
         The particular object that allow the communication with the hardware, in general a python wrapper around the
          hardware library.
-
-    # TODO add your particular attributes here if any
     """
     _controller_units = '°'  # DONE for your plugin: put the correct unit here
     is_multiaxes = False
@@ -71,19 +69,18 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
         self.controller.reset()
         self.controller.close()
 
-    # def commit_settings(self, param: Parameter):
-    #     """Apply the consequences of a change of value in the detector settings
-    #
-    #     Parameters
-    #     ----------
-    #     param: Parameter
-    #         A given parameter (within detector_settings) whose value has been changed by the user
-    #     """
-    #     ## TODO for your custom plugin
-    #     # if param.name() == "a_parameter_you've_added_in_self.params":
-    #     #     self.controller.your_method_to_apply_this_param_change()
-    #     # else:
-    #     #     pass
+    def commit_settings(self, param: Parameter):
+        """Apply the consequences of a change of value in the detector settings
+
+        Parameters
+        ----------
+        param: Parameter
+            A given parameter (within detector_settings) whose value has been changed by the user
+        """
+        # if param.name() == "a_parameter_you've_added_in_self.params":
+        #     self.controller.your_method_to_apply_this_param_change()
+        # else:
+        #     pass
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -104,6 +101,7 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
 
         info = "Initializing stage"
         self.controller.initialize()
+        self.controller.homing()  # Turns controller to REFERENCED state (solid green)
         initialized = True
         return info, initialized
 
