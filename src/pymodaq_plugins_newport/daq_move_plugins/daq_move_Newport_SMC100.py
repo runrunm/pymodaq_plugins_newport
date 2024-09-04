@@ -1,5 +1,4 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main, DataActuator
-# common set of parameters for all actuators
 from pymodaq.utils.daq_utils import ThreadCommand  # object used to send info back to the main thread
 from pymodaq.utils.parameter import Parameter
 
@@ -9,8 +8,8 @@ import pyvisa
 
 rm = pyvisa.ResourceManager()
 infos = rm.list_resources_info()
-port_nb = [infos[key].interface_board_number for key in infos.keys()][0]
-dev_nb = 1
+ports = [infos[key].interface_board_number for key in infos.keys()]
+dev_nb = 1  # Works when working with 1 SMC100 controller. Updating plugin is needed for controlling more controllers
 rm.close()
 
 class DAQ_Move_Newport_SMC100(DAQ_Move_base):
@@ -19,12 +18,17 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
     This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
     DAQ_Move_base. It makes a bridge between the DAQ_Move module and the Python wrapper of a particular instrument.
 
-    TODO Complete the docstring of your plugin with:
-        * The set of controllers and actuators that should be compatible with this instrument plugin.
-        * With which instrument and controller it has been tested.
-        * The version of PyMoDAQ during the test.
-        * The version of the operating system.
-        * Installation instructions: what manufacturer’s drivers should be installed to make it run?
+    This plugin should be compatible with SMC100 controllers using USB/RS232 connection. Unit should be changed for
+    controlling linear actuators (currently set to degrees).
+
+    Tested with SMC100PP (stepper motor) controller and URS150 motorized rotation stage
+
+    Operating System: Windows 11
+    PyMoDAQ version: 4.3.0 running in a conda environment with Python 3.11.9
+
+    Installing Newport SMC100 software should install all necessary drivers (testing with manufacturer's software
+    should be done in the first place)
+    https://www.newport.com/f/smc100-single-axis-dc-or-stepper-motion-controller
 
     Attributes:
     -----------
@@ -32,12 +36,12 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
         The particular object that allow the communication with the hardware, in general a python wrapper around the
          hardware library.
     """
-    _controller_units = '°'  # DONE for your plugin: put the correct unit here
+    _controller_units = '°'
     is_multiaxes = False
     _axis_names = ['1']
     _epsilon = 0.0001
 
-    params = [{'title': 'COM Port:', 'name': 'com_port', 'type': 'str', 'value': f'COM{port_nb}'}  # TODO for your custom plugin: elements to be added here as dicts in order to control your custom stage
+    params = [{'title': 'COM Port:', 'name': 'com_port', 'type': 'list', 'limits': ports}  # ['COM' + str(s) for s in ports]
              ] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
 
     # print(params[0]['title'])
@@ -48,9 +52,10 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
     def ini_attributes(self):
         #  TODO declare the type of the wrapper (and assign it to self.controller) you're going to use for easy
         #  autocompletion
-        self.controller: SMC100 = None
+        # self.controller: SMC100 = None
 
         # TODO declare here attributes you want/need to init with a default value
+        # print(self.settings['limits'])
         pass
 
     def get_actuator_value(self):
@@ -69,18 +74,22 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
         self.controller.reset()
         self.controller.close()
 
-    def commit_settings(self, param: Parameter):
+    def commit_settings(self, param: Parameter, controller=None):
         """Apply the consequences of a change of value in the detector settings
 
         Parameters
         ----------
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
+        controller:
         """
-        # if param.name() == "a_parameter_you've_added_in_self.params":
-        #     self.controller.your_method_to_apply_this_param_change()
+        # if param.name() == "com_port":
+        #     if param.value():
+        #         # self.controller.your_method_to_apply_this_param_change()
+        #         self.controller.move_abs(10)
         # else:
         #     pass
+        pass
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -96,8 +105,10 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
         initialized: bool
             False if initialization failed otherwise True
         """
+
         self.controller = self.ini_stage_init(old_controller=controller,
-                                              new_controller=SMC100(port=port_nb, dev_number=dev_nb))
+                                              new_controller=SMC100(port=self.settings['com_port'],
+                                                                    dev_number=dev_nb))
 
         info = "Initializing stage"
         self.controller.initialize()
