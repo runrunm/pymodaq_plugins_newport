@@ -1,6 +1,6 @@
 name: GitHub Actions Version Updater
 
-# Controls when the action will run. Not triggered yet
+# Controls when the action will run.
 on:
   release:
     types: [created]
