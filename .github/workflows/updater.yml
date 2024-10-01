@@ -1,9 +1,9 @@
 name: GitHub Actions Version Updater
 
-# Controls when the action will run.
 on:
-  schedule:
-    - cron: '24 9 1 10 *'
+  push:
+    branches:
+      - dev
 
 jobs:
   build:
