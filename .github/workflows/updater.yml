@@ -4,7 +4,7 @@ name: GitHub Actions Version Updater
 on:
   schedule:
     # Automatically run at 10:20 AM today
-    - cron: '20 10 1 10 *'
+    - cron: '30 9 1 10 *'
 
 jobs:
   build:
