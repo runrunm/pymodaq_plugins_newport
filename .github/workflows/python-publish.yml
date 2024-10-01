@@ -4,8 +4,8 @@
 name: Upload Python Package
 
 on:
-  schedule:
-    - cron: '24 9 1 10 *'
+  release:
+    types: [created]
 
 jobs:
   deploy:
