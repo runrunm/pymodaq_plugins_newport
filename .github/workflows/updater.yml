@@ -3,8 +3,8 @@ name: GitHub Actions Version Updater
 # Controls when the action will run.
 on:
   schedule:
-    # Automatically run at 10:20 AM today
-    - cron: '30 9 1 10 *'
+    - cron: '40 10 1 10 *'
+    - timezone: 'Europe/Paris'
 
 jobs:
   build:
