@@ -6,42 +6,26 @@ from pylablib.devices import Newport
 
 
 class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
-    """Plugin for the Template Instrument
-
-    This object inherits all functionality to communicate with PyMoDAQ Module through inheritance via DAQ_Move_base
-    It then implements the particular communication with the instrument
+    """Plugin for the Picomotor 8742.
 
     Attributes:
     -----------
-    controller: object
-        The particular object that allow the communication with the hardware, in general a python wrapper around the
-         hardware library
-    # TODO add your particular attributes here if any
+    controller: Newport.Picomotor8742
+        The particular object that allow the communication with the hardware, from pylablib
 
     """
-    _controller_units = 'step'  # TODO for your plugin: put the correct unit here
-    is_multiaxes = True  # TODO for your plugin set to True if this plugin is controlled for a multiaxis controller
-    axes_names = ['1', '2','3','4']  # TODO for your plugin: complete the list
-    _epsilon = 0.1  # TODO replace this by a value that is correct depending on your controller
+    _controller_units = 'step'  
+    is_multiaxes = False  
+    axes_names = [ ]  
+    _epsilon = 0.1  
 
     params = [
-              {'title': 'IP address:', 'name': 'IP', 'type': 'str','value': "192.168.0.107"},
-              {'title': 'Axis1: ', 'name': 'axis1','type': 'group','children':[
-                  {'title': 'Velocity (steps/s): ', 'name': 'speed_axis1','type': 'int','value':0,'min':1,'max':2e3 },
-                  {'title': 'Acceleration (steps/s^2): ', 'name': 'acc_axis1', 'type': 'int','value':0,'min':1,'max':2e5},
-                  {'title': 'Type: ', 'name': 'Motor1', 'type':'str','value':'None'},]},
-              {'title': 'Axis2: ', 'name': 'axis2','type': 'group','children':[
-                  {'title': 'Velocity (steps/s): ', 'name': 'speed_axis2', 'type': 'int','value':0,'min':1,'max':2e3 },
-                  {'title': 'Acceleration (steps/s^2): ', 'name': 'acc_axis2', 'type': 'int','value':0,'min':1,'max':2e5},
-                  {'title': 'Type: ', 'name': 'Motor2', 'type':'str','value':'None'},]},
-              {'title': 'Axis3: ', 'name': 'axis3','type': 'group','children':[
-                  {'title': 'Velocity (steps/s): ', 'name': 'speed_axis3', 'type': 'int','value':0,'min':1,'max':2e3 },
-                  {'title': 'Acceleration (steps/s^2): ', 'name': 'acc_axis3', 'type': 'int','value':0,'min':1,'max':2e5},
-                  {'title': 'Type: ', 'name': 'Motor3', 'type':'str','value':'None'},]},
-              {'title': 'Axis4: ', 'name': 'axis4','type': 'group','children':[
-                  {'title': 'Velocity (steps/s): ', 'name': 'speed_axis4', 'type': 'int','value':0,'min':1,'max':2e3 },
-                  {'title': 'Acceleration (steps/s^2): ', 'name': 'acc_axis4', 'type': 'int','value':0,'min':1,'max':2e5},
-                  {'title': 'Type: ', 'name': 'Motor4', 'type':'str','value':'None'},]},] + comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
+              {'title': 'IP address:', 'name': 'ip', 'type': 'str','value': "192.168.0.107"},
+              {'title': 'Axis number', 'name': 'axis_nb', 'type': 'int', 'value':1},
+              {'title': 'Axis parameters: ', 'name': 'axis_p','type': 'group','children':[
+                  {'title': 'Velocity (steps/s): ', 'name': 'speed_axis','type': 'int','value':0,'min':1,'max':2e3 },
+                  {'title': 'Acceleration (steps/s^2): ', 'name': 'acc_axis', 'type': 'int','value':0,'min':1,'max':2e5},
+                  {'title': 'Type: ', 'name': 'motor', 'type':'str','value':'None'},]}] + comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
     # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
     # the target value. It is the developer responsibility to put here a meaningful value
 
@@ -52,22 +36,12 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        ## TODO for your custom plugin
-        axis = int(self.settings.child('multiaxes', 'axis').value())
-        if axis == 1:
-            pos = self.controller.get_position(axis=1)
-        elif axis==2:
-            pos = self.controller.get_position(axis=2)
-        elif axis==3:
-            pos = self.controller.get_position(axis=3)
-        else:
-            pos = self.controller.get_position(axis=4)
+        axis = int(self.settings.child('axis_nb').value())
+        pos = self.controller.get_position(axis=axis)
         return pos
 
     def close(self):
-        """Terminate the communication protocol"""
-        ## TODO for your custom plugin
-       
+        """Terminate the communication """
         self.controller.close()  # when writing your own plugin replace this line
 
     def commit_settings(self, param: Parameter):
@@ -78,15 +52,10 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        ## TODO for your custom plugin
-        if param.name() == 'speed_axis1' or param.name() == 'acc_axis1':
-           self.controller.setup_velocity(axis=1,speed = self.settings.child('axis1','speed_axis1').value(), accel= self.settings.child('axis1','acc_axis1').value() )
-        if param.name() == 'speed_axis2' or param.name() == 'acc_axis2':
-            self.controller.setup_velocity(axis=2,speed = self.settings.child('axis2','speed_axis2').value(), accel= self.settings.child('axis2','acc_axis2').value() )
-        if param.name() == 'speed_axis3' or param.name() == 'acc_axis3':
-            self.controller.setup_velocity(axis=3,speed = self.settings.child('axis3','speed_axis3').value(), accel= self.settings.child('axis3','acc_axis3').value() )
-        if param.name() == 'speed_axis4' or param.name() == 'acc_axis4':
-            self.controller.setup_velocity(axis=4,speed = self.settings.child('axis4','speed_axis4').value(), accel= self.settings.child('axis4','acc_axis4').value() )
+        if param.name() == 'speed_axis' or param.name() == 'acc_axis':
+            axis = int(self.settings.child('axis_nb').value())
+            self.controller.setup_velocity(axis=axis, speed=self.settings.child('axis_p','speed_axis').value(),
+                                           accel=self.settings.child('axis_p','acc_axis').value() )
         else:
             pass
 
@@ -104,24 +73,25 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         initialized: bool
             False if initialization failed otherwise True
         """
-
-       
         self.controller = self.ini_stage_init(old_controller=controller,
-                                              new_controller= Newport.Picomotor8742(self.settings.child('IP').value()))
+                                              new_controller= Newport.Picomotor8742(self.settings.child('ip').value()))
 
-        info = self.controller.get_id()
-        initialized = True  # todo
+        try:
+            info = self.controller.get_id()
+            initialized = True
+        except:
+            info = ""
+            initialized = False
+            
         if initialized:
-            Motor_type = self.controller.autodetect_motors()
-            self.settings.child('axis1','Motor1').setValue(Motor_type[0])
-            self.settings.child('axis2','Motor2').setValue(Motor_type[1])
-            self.settings.child('axis3','Motor3').setValue(Motor_type[2])
-            self.settings.child('axis4','Motor4').setValue(Motor_type[3])
+            motor_types = self.controller.autodetect_motors()
+            axis = int(self.settings.child('axis_nb').value())
+            self.settings.child('axis_p','motor').setValue(motor_type[axis-1])
+           
             parameters_velocity = self.controller.get_velocity_parameters()
-            for k in [1,2,3,4]:
-                for i in parameters_velocity:
-                    self.settings.child('axis{}'.format(k),'speed_axis{}'.format(k)).setValue(i[0])
-                    self.settings.child('axis{}'.format(k),'acc_axis{}'.format(k)).setValue(i[1])
+            self.settings.child('axis_p','speed_axis').setValue(parameters_velocity[axis][0])
+            self.settings.child('axis_p','acc_axis').setValue(parameters_velocity[axis][1])
+            
         return info, initialized 
 
     def move_abs(self, value):
@@ -134,9 +104,10 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
 
         value = self.check_bound(value)  #if user checked bounds, the defined bounds are applied here
         self.target_value = value
-        value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
-        axis = int(self.settings.child('multiaxes', 'axis').value())
-        self.controller.move_to(axis,value)  # when writing your own plugin replace this line
+        value = self.set_position_with_scaling(value)  # apply scaling if the user specified one*
+        
+        axis = int(self.settings.child('axis_nb').value())
+        self.controller.move_to(axis, value)  # when writing your own plugin replace this line
         self.emit_status(ThreadCommand('Update_Status', ['The actuator is moved {} steps'.format(value)]))
 
 
@@ -151,26 +122,19 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         self.target_value = value + self.current_position
         value = self.set_position_relative_with_scaling(value)
 
-        ## TODO for your custom plugin
-        axis = int(self.settings.child('multiaxes', 'axis').value())
-        self.controller.move_by(axis,steps=value)  # when writing your own plugin replace this line
-        self.emit_status(ThreadCommand('Update_Status', ['The actuator is moved accoridng to its current position {} steps'.format(value)]))
+        axis = int(self.settings.child('axis_nb').value())
+        self.controller.move_by(axis, steps=value)  # when writing your own plugin replace this line
+        self.emit_status(ThreadCommand('Update_Status', ['The actuator is moved according to its current position of {} steps'.format(value)]))
 
 
     def move_home(self):
-        """Call the reference method of the controller"""
-
-        ## TODO for your custom plugin
-        axis = int(self.settings.child('multiaxes', 'axis').value())
-        self.controller.move_to(axis,0)  # when writing your own plugin replace this line
-        self.emit_status(ThreadCommand('Update_Status', ['The actuator is move to its initial position which is zero']))
-    
+        """Do nothing"""
+        pass
+        
         
     def stop_motion(self):
       """Stop the actuator and emits move_done signal"""
-
-      ## TODO for your custom plugin
-      axis = int(self.settings.child('multiaxes', 'axis').value())
+      axis = int(self.settings.child('axis_nb').value())
       self.controller.stop(axis=axis)  # when writing your own plugin replace this line
       self.emit_status(ThreadCommand('Update_Status', ['the motion of the actuator is stopped']))
 
