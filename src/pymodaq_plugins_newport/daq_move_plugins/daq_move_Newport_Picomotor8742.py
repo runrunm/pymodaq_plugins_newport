@@ -14,7 +14,7 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         The particular object that allow the communication with the hardware, from pylablib
 
     """
-    _controller_units = 'wr'
+    _controller_units = ''
     is_multiaxes = True
     axes_names = ['1', '2', '3','4']
     _epsilon = 0.1  
