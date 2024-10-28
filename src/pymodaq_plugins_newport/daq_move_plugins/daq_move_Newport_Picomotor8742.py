@@ -14,10 +14,10 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         The particular object that allow the communication with the hardware, from pylablib
 
     """
-    _controller_units = 'wr'
+    _controller_units = ''
     is_multiaxes = True
-    axes_names = ['1', '2', '3','4']
-    _epsilon = 0.1  
+    axes_names = {'1': 1, '2': 2, '3': 3, '4': 4}
+    _epsilon = 10.0
     params = [
               {'title': 'IP address:', 'name': 'ip', 'type': 'str','value': "192.168.0.109"},
               {'title': 'Axis parameters: ', 'name': 'axis_p','type': 'group','children':[
@@ -34,7 +34,7 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        axis = int(self.settings.child('multiaxes', 'axis').value())
+        axis = self.axis_value
         pos = self.controller.get_position(axis=axis)
         return pos
 
@@ -51,8 +51,7 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         if param.name() == 'speed_axis' or param.name() == 'acc_axis':
-            axis = int(self.settings.child('multiaxes', 'axis').value())
-            self.controller.setup_velocity(axis=axis, speed=self.settings.child('axis_p','speed_axis').value(),
+            self.controller.setup_velocity(axis=self.axis_value, speed=self.settings.child('axis_p','speed_axis').value(),
                                            accel=self.settings.child('axis_p','acc_axis').value() )
         else:
             pass
@@ -75,7 +74,7 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         self.controller = self.ini_stage_init(slave_controller=controller)
 
         if self.is_master:
-            self.controller = Newport.Picomotor8742(self.settings.child('ip').value())
+            self.controller = Newport.Picomotor8742(self.settings['ip'])
 
         try:
             info = self.controller.get_id()
@@ -86,13 +85,14 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
 
         if initialized:
             motor_types = self.controller.autodetect_motors()
-            axis = int(self.settings.child('multiaxes', 'axis').value())
+            axis = self.axis_value
             self.settings.child('axis_p','motor').setValue(motor_types[axis-1])
            
             parameters_velocity = self.controller.get_velocity_parameters()
             self.settings.child('axis_p','speed_axis').setValue(parameters_velocity[axis][0])
             self.settings.child('axis_p','acc_axis').setValue(parameters_velocity[axis][1])
-            
+
+
         return info, initialized 
 
     def move_abs(self, value):
@@ -106,9 +106,8 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         value = self.check_bound(value)  #if user checked bounds, the defined bounds are applied here
         self.target_value = value
         value = self.set_position_with_scaling(value)  # apply scaling if the user specified one*
-        
-        axis = int(self.settings.child('multiaxes', 'axis').value())
-        self.controller.move_to(axis, value)  # when writing your own plugin replace this line
+
+        self.controller.move_to(self.axis_value, value)  # when writing your own plugin replace this line
         self.emit_status(ThreadCommand('Update_Status', ['The actuator is moved {} steps'.format(value)]))
 
 
@@ -123,8 +122,7 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         self.target_value = value + self.current_position
         value = self.set_position_relative_with_scaling(value)
 
-        axis = int(self.settings.child('multiaxes', 'axis').value())
-        self.controller.move_by(axis, steps=value)  # when writing your own plugin replace this line
+        self.controller.move_by(self.axis_value, steps=value)  # when writing your own plugin replace this line
         self.emit_status(ThreadCommand('Update_Status', ['The actuator is moved according to its current position of {} steps'.format(value)]))
 
 
@@ -135,8 +133,7 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         
     def stop_motion(self):
       """Stop the actuator and emits move_done signal"""
-      axis = int(self.settings.child('multiaxes', 'axis').value())
-      self.controller.stop(axis=axis)  # when writing your own plugin replace this line
+      self.controller.stop(axis=self.axis_value)  # when writing your own plugin replace this line
       self.emit_status(ThreadCommand('Update_Status', ['the motion of the actuator is stopped']))
 
 
