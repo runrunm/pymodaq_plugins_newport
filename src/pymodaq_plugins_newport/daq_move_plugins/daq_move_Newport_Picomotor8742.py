@@ -17,7 +17,7 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
     _controller_units = ''
     is_multiaxes = True
     axes_names = {'1': 1, '2': 2, '3': 3, '4': 4}
-    _epsilon = 0.1  
+    _epsilon = 10.0
     params = [
               {'title': 'IP address:', 'name': 'ip', 'type': 'str','value': "192.168.0.109"},
               {'title': 'Axis parameters: ', 'name': 'axis_p','type': 'group','children':[
@@ -74,7 +74,7 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
         self.controller = self.ini_stage_init(slave_controller=controller)
 
         if self.is_master:
-            self.controller = Newport.Picomotor8742(self.settings.child('ip').value())
+            self.controller = Newport.Picomotor8742(self.settings['ip'])
 
         try:
             info = self.controller.get_id()
@@ -91,7 +91,8 @@ class DAQ_Move_Newport_Picomotor8742(DAQ_Move_base):
             parameters_velocity = self.controller.get_velocity_parameters()
             self.settings.child('axis_p','speed_axis').setValue(parameters_velocity[axis][0])
             self.settings.child('axis_p','acc_axis').setValue(parameters_velocity[axis][1])
-            
+
+
         return info, initialized 
 
     def move_abs(self, value):
