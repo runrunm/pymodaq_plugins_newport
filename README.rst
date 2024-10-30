@@ -22,6 +22,8 @@ Authors
 * David Bresteau (david.bresteau@cea.fr)
 * Sébastien Quistrebert (sebastien.quistrebert@ens-paris-saclay.fr)
 * Bastien Bégon (bastien.begon@crpp.cnrs.fr)
+* Elias Sfeir
+* Aurore Finco (aurore.finco@umontpellier.fr)
 
 Instruments
 ===========
@@ -35,6 +37,7 @@ Actuators
 * **AgilisSerial**: for controllers AG-UC8 and AG-UC2 tested with motorized mounts AG-M100N (no encoder)
 * **XPS-Q8**: 8-axis Universal Motion Controller/Driver, ethernet
 * **SMC100**: Single axis motion controller
+* **Picomotor8742**: 4-axis open-loop motion controller
 
 Installation notes
 ==================
@@ -68,5 +71,11 @@ Installing `Newport SMC100 software <https://www.newport.com/f/smc100-single-axi
 Operating System: Windows 11
 
 PyMoDAQ version: 4.3.0 running in a conda environment with Python 3.11.9
+
+Picomotor 8742
+++++++++++++++
+
+This plugin uses the pylablib driver.
+Tested on Windows 10 with pymodaq >= 4.4.0 in a conda environment with Python 3.8
 
 
