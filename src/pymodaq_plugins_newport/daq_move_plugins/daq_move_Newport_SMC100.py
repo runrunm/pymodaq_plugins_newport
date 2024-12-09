@@ -66,8 +66,9 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
 
     def close(self):
         """Terminate the communication protocol"""
-        self.controller.reset()
-        self.controller.close()
+        if self.controller is not None:
+            self.controller.reset()
+            self.controller.close()
 
     def commit_settings(self, param: Parameter, controller=None):
         """Apply the consequences of a change of value in the detector settings
@@ -78,13 +79,6 @@ class DAQ_Move_Newport_SMC100(DAQ_Move_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         controller:
         """
-        # if param.name() == "com_port":
-        #     if param.value():
-        #         # self.controller.your_method_to_apply_this_param_change()
-        #         self.controller.move_abs(10)
-        # else:
-        #     pass
-        pass
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
