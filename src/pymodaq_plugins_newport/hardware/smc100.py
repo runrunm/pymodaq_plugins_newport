@@ -71,6 +71,23 @@ class SMC100:
         self._device = None
         self.error_code = ERROR_CODE
 
+        port = 'ASRL'+self.port+'::INSTR'
+        self._device = visa.ResourceManager('@py').open_resource(
+            port,
+            timeout=self.defaults['timeout'],
+            encoding=self.defaults['encoding'],
+            parity=self.defaults['parity'],
+            baud_rate=self.defaults['baud_rate'],
+            data_bits=self.defaults['data_bits'],
+            stop_bits=self.defaults['stop_bits'],
+            write_termination=self.defaults['write_termination'],
+            read_termination=self.defaults['read_termination'],
+            flow_control=self.defaults['flow_control'],
+        )
+
+        # make sure connection is established before doing anything else
+        sleep(0.5)
+
     def write(self, cmd: str):
         """ Add device number to command and send to device. """
         cmd = f"{self.dev_number}{cmd}"
@@ -88,25 +105,6 @@ class SMC100:
         answer = respons[3:]
 
         return answer
-
-    def initialize(self) -> None:
-        """Connect to device using pyvisa resource manager"""
-        port = 'ASRL'+self.port+'::INSTR'
-        self._device = visa.ResourceManager('@py').open_resource(
-            port,
-            timeout=self.defaults['timeout'],
-            encoding=self.defaults['encoding'],
-            parity=self.defaults['parity'],
-            baud_rate=self.defaults['baud_rate'],
-            data_bits=self.defaults['data_bits'],
-            stop_bits=self.defaults['stop_bits'],
-            write_termination=self.defaults['write_termination'],
-            read_termination=self.defaults['read_termination'],
-            flow_control=self.defaults['flow_control'],
-        )
-
-        # make sure connection is established before doing anything else
-        sleep(0.5)
 
     def homing(self):
         """Find home, works only if controller state is NOT REFERENCED"""
